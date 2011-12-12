@@ -1,0 +1,2 @@
+recusive-include examples *.py
+include LICENSE

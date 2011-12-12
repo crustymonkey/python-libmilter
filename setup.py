@@ -15,4 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with python-libmilter.  If not, see <http://www.gnu.org/licenses/>.
 
+from distutils.core import setup
+from libmilter import __version__ as lmversion
 
+setup(name='python-libmilter' ,
+    version=lmversion ,
+    author='Jay Deiman' ,
+    author_email='admin@splitstreams.com' ,
+    url='http://stuffivelearned.org/doku.php?id=programming:python:python-libmilter' ,
+    description='A pure python implementation of libmilter' ,
+    py_modules=['libmilter'] ,
+)
