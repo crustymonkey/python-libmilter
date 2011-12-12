@@ -1,2 +1,3 @@
 recursive-include examples *.py
 include LICENSE
+include README.md
