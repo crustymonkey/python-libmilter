@@ -1,2 +1,2 @@
-recusive-include examples *.py
+recursive-include examples *.py
 include LICENSE
