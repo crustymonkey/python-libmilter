@@ -969,6 +969,9 @@ class MilterProtocol(object):
         
         NOTE: This can ONLY be called in eob()
         """
+        if not SMFIF_CHGBODY & self._opts & self._mtaOpts:
+            print 'Tried to change the body without setting the proper option'
+            return
         req = '%s%s' % (SMFIR_REPLBODY , body)
         req = pack_uint32(len(req)) + req
         self.send(req)
@@ -990,7 +993,7 @@ class MilterProtocol(object):
     def chgHeader(self , key , val='' , index=1):
         """
         This will change a header in the email.  The "key" should be
-        exectly what was received in header().  If "val" is empty (''),
+        exactly what was received in header().  If "val" is empty (''),
         the header will be removed.  "index" refers to which header to
         remove in the case that there are multiple headers with the
         same "key" (Received: is one example)
