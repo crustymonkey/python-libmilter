@@ -16,13 +16,26 @@
 # along with python-libmilter.  If not, see <http://www.gnu.org/licenses/>.
 
 from distutils.core import setup
-from libmilter import __version__ as lmversion
 
 setup(name='python-libmilter' ,
-    version=lmversion ,
+    version='1.0.1' ,
     author='Jay Deiman' ,
     author_email='admin@splitstreams.com' ,
     url='http://stuffivelearned.org/doku.php?id=programming:python:python-libmilter' ,
     description='A pure python implementation of libmilter' ,
     py_modules=['libmilter'] ,
+    long_description='Full documentation can be found at: '
+        'http://stuffivelearned.org/doku.php?id=programming:python:python-libmilter' ,
+    classifiers=[
+        'Development Status :: 4 - Beta' ,
+        'Environment :: No Input/Output (Daemon)' ,
+        'Intended Audience :: System Administrators' ,
+        'Intended Audience :: Information Technology' ,
+        'License :: OSI Approved :: GNU General Public License (GPL)' ,
+        'Natural Language :: English' ,
+        'Operating System :: POSIX' ,
+        'Programming Language :: Python' ,
+        'Topic :: System :: Systems Administration' ,
+        'Topic :: System' ,
+    ]
 )
