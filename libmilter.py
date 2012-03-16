@@ -259,7 +259,7 @@ class DeferToThread(Deferred):
 
     def _wrapper(self, cb, args, kwargs):
         try:
-            self.result = cb(*args, **kwargs)
+            self.result = cb(*args , **kwargs)
         except Exception as e:
             self.error = e
         self.completed = True
@@ -462,7 +462,7 @@ class ThreadMixin(threading.Thread):
             try:
                 self.dataReceived(buf)
             except Exception as e:
-                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id, e))
+                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id , e))
                 if DEBUG:
                     traceback.print_exc()
                     debug('AN EXCEPTION OCCURED: %s' % e, 1, self.id)
@@ -504,7 +504,7 @@ class ForkMixin(object):
             try:
                 self.dataReceived(buf)
             except Exception as e:
-                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id, e))
+                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id , e))
                 if DEBUG:
                     traceback.print_exc()
                     debug('AN EXCEPTION OCCURED: %s' % e, 1, self.id)
@@ -606,7 +606,7 @@ class MilterProtocol(object):
         if buf:
             curcmds = []
             try:
-                curcmds, remaining = parse_packet(buf)
+                curcmds , remaining = parse_packet(buf)
             except InvalidPacket as e:
                 debug('Found a partial header: %r; cmdlen: %d ; buf: %r' % 
                     (e.pp, len(e.cmds), buf), 2, self.id)
@@ -720,11 +720,11 @@ class MilterProtocol(object):
             debug('Sending: %r' % msg, 4, self.id)
             self.transport.sendall(msg)
         except AttributeError as e:
-            emsg = 'AttributeError sending %s: %s' % (msg, e)
+            emsg = 'AttributeError sending %s: %s' % (msg , e)
             self.log(emsg)
             debug(emsg)
         except socket.error as e:
-            emsg = 'Socket Error sending %s: %s' % (msg, e)
+            emsg = 'Socket Error sending %s: %s' % (msg , e)
             self.log(emsg)
             debug(emsg)
         self._sockLock.release()
@@ -798,11 +798,11 @@ class MilterProtocol(object):
         if data:
             mfrom = data[1:-1]
         # Return the mail from address parsed by the MTA, if possible
-        if b'mail_addr' in md:
-            mfrom = md[b'mail_addr']
-        if b'i' in md:
-            self._qid = md[b'i']
-        return self.mailFrom(mfrom, md)
+        if 'mail_addr' in md:
+            mfrom = md['mail_addr']
+        if 'i' in md:
+            self._qid = md['i']
+        return self.mailFrom(mfrom , md)
 
     def _rcpt(self, cmd, data):
         """
@@ -816,11 +816,11 @@ class MilterProtocol(object):
         rcpt = ''
         if data:
             rcpt = data[1:-1]
-        elif b'rcpt_addr' in md:
-            rcpt = md[b'rcpt_addr']
-        if b'i' in md:
-            self._qid = md[b'i']
-        return self.rcpt(rcpt, md)
+        if 'rcpt_addr' in md:
+            rcpt = md['rcpt_addr']
+        if 'i' in md:
+            self._qid = md['i']
+        return self.rcpt(rcpt , md)
 
     def _header(self, cmd, data):
         """
@@ -833,8 +833,8 @@ class MilterProtocol(object):
         data = data[0]
         key = ''
         val = ''
-        if b'i' in md:
-            self._qid = md[b'i']
+        if 'i' in md:
+            self._qid = md['i']
         if data:
             key, rem = readUntilNull(data[1:])
             val, rem = readUntilNull(rem)
@@ -851,8 +851,8 @@ class MilterProtocol(object):
         md = {}
         if cmd is not None:
             md = dictFromCmd(cmd[2:])
-        if b'i' in md:
-            self._qid = md[b'i']
+        if 'i' in md:
+            self._qid = md['i']
         return self.eoh(md)
 
     def _data(self, cmd, data):
@@ -862,8 +862,8 @@ class MilterProtocol(object):
         md = {}
         if cmd is not None:
             md = dictFromCmd(cmd[2:])
-        if b'i' in md:
-            self._qid = md[b'i']
+        if 'i' in md:
+            self._qid = md['i']
         return self.data(md)
 
     def _body(self, cmd, data):
@@ -876,8 +876,8 @@ class MilterProtocol(object):
         if cmd is not None:
             md = dictFromCmd(cmd[2:])
         chunk = ''
-        if b'i' in md:
-            self._qid = md[b'i']
+        if 'i' in md:
+            self._qid = md['i']
         if data:
             chunk = data[1:]
         return self.body(chunk, md)
@@ -890,8 +890,8 @@ class MilterProtocol(object):
         md = {}
         if cmd is not None:
             md = dictFromCmd(cmd[2:])
-        if b'i' in md:
-            self._qid = md[b'i']
+        if 'i' in md:
+            self._qid = md['i']
         ret = self.eob(md)
         return ret
 
@@ -935,7 +935,7 @@ class MilterProtocol(object):
         NOTE: This can ONLY be called in eob()
         """
         if esmtpAdd:
-            if not SMFIF_ADDRCPT_PAR & self._opts & self._mtaOpts:
+            if not SMFIF_ADDRCPT_PAR & self._opts & self._mtaopts:
                 print('Add recipient par called without the proper opts set')
                 return
             req = SMFIR_ADDRCPT_PAR + rcpt + b'\0' + esmtpAdd + b'\0'
@@ -1213,7 +1213,7 @@ class MilterProtocol(object):
 # class AsyncFactory {{{
 class AsyncFactory(object):
     # __init__() {{{
-    def __init__(self, sockstr, protocol, opts=0, listenq=50, 
+    def __init__(self , sockstr , protocol , opts=0 , listenq=50 , 
             sockChmod=0o666):
         self.sock = None
         self.opts = opts
@@ -1305,11 +1305,12 @@ class AsyncFactory(object):
                     try:
                         p.dataReceived(buf)
                     except Exception as e:
-                        p.log('AN EXCEPTION OCCURED IN %s: %s' % (p.id, e))
+                        p.log('AN EXCEPTION OCCURED IN %s: %s' % (p.id , e))
                         if DEBUG:
                             traceback.print_exc()
                         print('AN EXCEPTION OCCURED IN ' \
-                            '%s: %s' % (p.id, e), file=sys.stderr)
+                            '%s: %s' % (p.id , e), file=sys.stderr)
+                        p.send(TEMPFAIL)
                         p.connectionLost()
                         self.unregister(fd)
             # Check the deferreds
@@ -1330,11 +1331,11 @@ class AsyncFactory(object):
     # close() {{{
     def close(self):
         self._close.set()
-        for i, s in list(self.sockMap.items()):
+        for i , s in list(self.sockMap.items()):
             self.poll.unregister(i)
             s.close()
             del self.sockMap[i]
-        for i, p in list(self.protoMap.items()):
+        for i , p in list(self.protoMap.items()):
             p.connectionLost()
             del self.protoMap[i]
         self.sock.close()
@@ -1343,8 +1344,8 @@ class AsyncFactory(object):
 
 # class ThreadFactory {{{
 class ThreadFactory(object):
-    def __init__(self, sockstr, protocol, opts=0, listenq=50, 
-            sockChmod=0o666, cSockTimeout=1200):
+    def __init__(self , sockstr , protocol , opts=0 , listenq=50 , 
+            sockChmod=0o666 , cSockTimeout=1200):
         self.sock = None
         self.opts = opts
         self.protocol = protocol
@@ -1412,8 +1413,8 @@ class ThreadFactory(object):
 
 # class ForkFactory {{{
 class ForkFactory(object):
-    def __init__(self, sockstr, protocol, opts=0, listenq=50, 
-            sockChmod=0o666, cSockTimeout=300):
+    def __init__(self , sockstr , protocol , opts=0 , listenq=50 , 
+            sockChmod=0o666 , cSockTimeout=300):
         self.sock = None
         self.opts = opts
         self.protocol = protocol
