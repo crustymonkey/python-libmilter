@@ -117,56 +117,56 @@ SMFIP_PROTOS = {
 # }}}
 
 # Network protocol families (SMFIA_*) {{{
-SMFIA_UNKNOWN = 'U'         # Unknown
-SMFIA_UNIX = 'L'            # Unix/local
-SMFIA_INET = '4'            # inet - ipv4
-SMFIA_INET6 = '6'           # inet6 - ipv6
+SMFIA_UNKNOWN = b'U'         # Unknown
+SMFIA_UNIX = b'L'            # Unix/local
+SMFIA_INET = b'4'            # inet - ipv4
+SMFIA_INET6 = b'6'           # inet6 - ipv6
 # }}}
 
 # Macros sent from the MTA (SMFIC_*) {{{
-SMFIC_ABORT = 'A'           # Abort
-SMFIC_BODY = 'B'            # Body chunk
-SMFIC_CONNECT = 'C'         # Connection info
-SMFIC_MACRO = 'D'           # Define macro
-SMFIC_BODYEOB = 'E'         # Final body chunk
-SMFIC_HELO = 'H'            # HELO
-SMFIC_HEADER = 'L'          # Header
-SMFIC_MAIL = 'M'            # MAIL from
-SMFIC_EOH = 'N'             # eoh
-SMFIC_OPTNEG = 'O'          # Option negotiation
-SMFIC_QUIT = 'Q'            # QUIT
-SMFIC_RCPT = 'R'            # RCPT to
+SMFIC_ABORT = b'A'           # Abort
+SMFIC_BODY = b'B'            # Body chunk
+SMFIC_CONNECT = b'C'         # Connection info
+SMFIC_MACRO = b'D'           # Define macro
+SMFIC_BODYEOB = b'E'         # Final body chunk
+SMFIC_HELO = b'H'            # HELO
+SMFIC_HEADER = b'L'          # Header
+SMFIC_MAIL = b'M'            # MAIL from
+SMFIC_EOH = b'N'             # eoh
+SMFIC_OPTNEG = b'O'          # Option negotiation
+SMFIC_QUIT = b'Q'            # QUIT
+SMFIC_RCPT = b'R'            # RCPT to
 # End Version 2
-SMFIC_DATA = 'T'            # DATA
-SMFIC_UNKNOWN = 'U'         # Any unknown command
-SMFIC_QUIT_NC = 'K'         # Quit + new connection
+SMFIC_DATA = b'T'            # DATA
+SMFIC_UNKNOWN = b'U'         # Any unknown command
+SMFIC_QUIT_NC = b'K'         # Quit + new connection
 
 # My shortcut for body related macros
 SMFIC_BODY_MACS = (SMFIC_DATA , SMFIC_HEADER , SMFIC_EOH , SMFIC_BODY)
 # }}}
 
 # Responses/commands that we send to the MTA (SMFIR_*) {{{ 
-SMFIR_ADDRCPT = '+'         # Add recipient 
-SMFIR_DELRCPT = '-'         # Remove recipient 
-SMFIR_ACCEPT = 'a'          # Accept 
-SMFIR_REPLBODY = 'b'        # Replace body (chunk)
-SMFIR_CONTINUE = 'c'        # Continue
-SMFIR_DISCARD = 'd'         # Discard
-SMFIR_ADDHEADER = 'h'       # Add header
-SMFIR_CHGHEADER = 'm'       # Change header
-SMFIR_PROGRESS = 'p'        # Progress
-SMFIR_QUARANTINE = 'q'      # Quarantine
-SMFIR_REJECT = 'r'          # Reject
-SMFIR_TEMPFAIL = 't'        # Tempfail
-SMFIR_REPLYCODE = 'y'       # For setting the reply code
+SMFIR_ADDRCPT = b'+'         # Add recipient 
+SMFIR_DELRCPT = b'-'         # Remove recipient 
+SMFIR_ACCEPT = b'a'          # Accept 
+SMFIR_REPLBODY = b'b'        # Replace body (chunk)
+SMFIR_CONTINUE = b'c'        # Continue
+SMFIR_DISCARD = b'd'         # Discard
+SMFIR_ADDHEADER = b'h'       # Add header
+SMFIR_CHGHEADER = b'm'       # Change header
+SMFIR_PROGRESS = b'p'        # Progress
+SMFIR_QUARANTINE = b'q'      # Quarantine
+SMFIR_REJECT = b'r'          # Reject
+SMFIR_TEMPFAIL = b't'        # Tempfail
+SMFIR_REPLYCODE = b'y'       # For setting the reply code
 # End Version 2
-SMFIR_CONN_FAIL = 'f'       # Cause a connection failure
-SMFIR_SHUTDOWN = '4'        # 421: shutdown (internal to MTA)
-SMFIR_INSHEADER = 'i'       # Insert header
-SMFIR_SKIP = 's'            # Skip further events of this type
-SMFIR_CHGFROM = 'e'         # Change sender (incl. ESMTP args)
-SMFIR_ADDRCPT_PAR = '2'     # Add recipient (incl. ESMTP args)
-SMFIR_SETSYMLIST = 'l'      # Set list of symbols
+SMFIR_CONN_FAIL = b'f'       # Cause a connection failure
+SMFIR_SHUTDOWN = b'4'        # 421: shutdown (internal to MTA)
+SMFIR_INSHEADER = b'i'       # Insert header
+SMFIR_SKIP = b's'            # Skip further events of this type
+SMFIR_CHGFROM = b'e'         # Change sender (incl. ESMTP args)
+SMFIR_ADDRCPT_PAR = b'2'     # Add recipient (incl. ESMTP args)
+SMFIR_SETSYMLIST = b'l'      # Set list of symbols
 # }}}
 
 # Macro Class Numbers {{{
@@ -174,13 +174,13 @@ SMFIR_SETSYMLIST = 'l'      # Set list of symbols
 # Version 6 only
 # Macro class numbers, to identify the optional macro name lists that
 # may be sent after the initial negotiation header
-SMFIM_CONNECT = 0           # Macros for connect
-SMFIM_HELO = 1              # Macros for HELO
-SMFIM_ENVFROM = 2           # Macros for MAIL from
-SMFIM_ENVRCPT = 3           # Macros for RCPT to
-SMFIM_DATA = 4              # Macros for DATA
-SMFIM_EOM = 5               # Macros for end of message
-SMFIM_EOH = 6               # Macros for end of header
+SMFIM_CONNECT = b'0'           # Macros for connect
+SMFIM_HELO = b'1'              # Macros for HELO
+SMFIM_ENVFROM = b'2'           # Macros for MAIL from
+SMFIM_ENVRCPT = b'3'           # Macros for RCPT to
+SMFIM_DATA = b'4'              # Macros for DATA
+SMFIM_EOM = b'5'               # Macros for end of message
+SMFIM_EOH = b'6'               # Macros for end of header
 # }}}
 
 MILTER_CHUNK_SIZE = 65536
@@ -329,22 +329,22 @@ def readUntilNull(s):
 
     returns (string up to null , remainder after null)
     """
-    item = s.split('\0' , 1)
+    item = s.split(b'\0' , 1)
     if len(item) == 1:
         return (item[0] , None)
     else:
         return (item[0] , item[1])
 
 def checkData(data , macro):
-    if not data[0] == macro:
+    if not data[:1] == macro:
         raise UnknownError('Command does not start with correct '
-                'MACRO: %s (%s) should be %s' % (data[0] , data , macro))
+                'MACRO: %s (%s) should be %s' % (data[:1] , data , macro))
 
 def dictFromCmd(cmd):
     d = {}
     while cmd and len(cmd) > 1:
         key , rem = readUntilNull(cmd)
-        key = key.strip('{}')
+        key = key.strip(b'{}')
         if rem:
             val , rem = readUntilNull(rem)
         else:
@@ -634,7 +634,7 @@ class MilterProtocol(object):
         for i , cmd in enumerate(cmds):
             toSend = ''
             mtype = ''
-            firstLet = cmd[0]
+            firstLet = cmd[:1]
             if skipNum:
                 skipNum -= 1
                 continue
@@ -654,7 +654,7 @@ class MilterProtocol(object):
                 self._lastMacro = cmd
                 continue
             elif firstLet in self._MACMAP:
-                mtype = cmd[0]
+                mtype = cmd[:1]
             if toSend and not mtype:
                 # Basically, we just want to send something back
                 pass
