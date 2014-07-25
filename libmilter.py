@@ -938,13 +938,13 @@ class MilterProtocol(object):
             if not SMFIF_ADDRCPT_PAR & self._opts & self._mtaopts:
                 print('Add recipient par called without the proper opts set')
                 return
-            req = '%s%s\0%s\0' % (SMFIR_ADDRCPT_PAR , rcpt , esmtpAdd)
+            req = SMFIR_ADDRCPT_PAR + rcpt + b'\0' + esmtpAdd + b'\0'
             req = pack_uint32(len(req)) + req
         else:
             if not SMFIF_ADDRCPT & self._opts & self._mtaOpts:
                 print('Add recipient called without the proper opts set')
                 return
-            req = '%s%s\0' % (SMFIR_ADDRCPT , rcpt)
+            req = SMFIR_ADDRCPT + rcpt + b'\0'
             req = pack_uint32(len(req)) + req
         self.send(req)
 
@@ -959,7 +959,7 @@ class MilterProtocol(object):
         if not SMFIF_DELRCPT & self._opts & self._mtaOpts:
             print('Delete recipient called without the proper opts set')
             return
-        req = '%s%s\0' % (SMFIR_DELRCPT , rcpt)
+        req = SMFIR_DELRCPT + rcpt + b'\0'
         req = pack_uint32(len(req)) + req
         self.send(req)
 
@@ -972,7 +972,7 @@ class MilterProtocol(object):
         if not SMFIF_CHGBODY & self._opts & self._mtaOpts:
             print('Tried to change the body without setting the proper option')
             return
-        req = '%s%s' % (SMFIR_REPLBODY , body)
+        req = SMFIR_REPLBODY + body
         req = pack_uint32(len(req)) + req
         self.send(req)
 
@@ -986,7 +986,7 @@ class MilterProtocol(object):
         if not SMFIF_ADDHDRS & self._opts & self._mtaOpts:
             print('Add header called without the proper opts set')
             return
-        req = '%s%s\0%s\0' % (SMFIR_ADDHEADER , key.rstrip(':') , val)
+        req = SMFIR_ADDHEADER + key.rstrip(b':') + b'\0' + val + b'\0'
         req = pack_uint32(len(req)) + req
         self.send(req)
 
@@ -1003,8 +1003,8 @@ class MilterProtocol(object):
         if not SMFIF_CHGHDRS & self._opts & self._mtaOpts:
             print('Change headers called without the proper opts set')
             return
-        req = '%s%s%s\0%s\0' % (SMFIR_CHGHEADER , pack_uint32(index) , 
-                key.rstrip(':') , val)
+        req = SMFIR_CHGHEADER + pack_uint32(index) + \
+                key.rstrip(b':') + b'\0' + val + b'\0'
         req = pack_uint32(len(req)) + req
         self.send(req)
 
@@ -1018,7 +1018,7 @@ class MilterProtocol(object):
         if not SMFIF_QUARANTINE & self._opts & self._mtaOpts:
             print('Quarantine called without the proper opts set')
             return
-        req = '%s%s\0' % (SMFIR_QUARANTINE , msg)
+        req = SMFIR_QUARANTINE + msg + b'\0'
         req = pack_uint32(len(req)) + req
         self.send(req)
 
@@ -1029,8 +1029,7 @@ class MilterProtocol(object):
         The "xcode" is the xcode part of the reply (ex. 5.7.1 or 2.1.0).
         The "msg" is the text response.
         """
-        msg = msg.replace('%' , '%%')
-        req = '%s%s %s %s\0' % (SMFIR_REPLYCODE , rcode , xcode , msg)
+        req = SMFIR_REPLYCODE + rcode + b' ' + xcode + b' ' + msg + b'\0'
         req = pack_uint32(len(req)) + req
         self.send(req)
 
@@ -1044,7 +1043,7 @@ class MilterProtocol(object):
         if not SMFIF_CHGFROM & self._opts & self._mtaOpts:
             print('Change from called without the proper opts set')
             return
-        req = '%s%s\0%s\0' % (SMFIR_CHGFROM , frAddr , esmtpAdd)
+        req = SMFIR_CHGFROM + frAddr + b'\0' + esmtpAdd + b'\0'
         req = pack_uint32(len(req)) + req
         self.send(req)
 
