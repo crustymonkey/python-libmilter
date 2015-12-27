@@ -1264,8 +1264,10 @@ class AsyncFactory(object):
     def run(self):
         global DEFERRED_REG
         if self.sockStr.lower().startswith('inet:'):
-            junk , ip , port = self.sockStr.split(':')
-            self.sock = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+            ip = self.sockStr[5:self.sockStr.rfind(':')]
+            port = self.sockStr[self.sockStr.rfind(':')+1:]
+            (family, socktype, proto, canonname, sockaddr)=socket.getaddrinfo(ip, None)[0]
+            self.sock = socket.socket(family , socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.sock.bind((ip , int(port)))
         else:
