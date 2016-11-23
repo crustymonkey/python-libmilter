@@ -815,7 +815,7 @@ class MilterProtocol(object):
         data = data[0]
         rcpt = ''
         if data:
-            rcpt = data[2:-2]
+            rcpt = data[1:-1]
         elif md.has_key('rcpt_addr'):
             rcpt = md['rcpt_addr']
         if md.has_key('i'):
