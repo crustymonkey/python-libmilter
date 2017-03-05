@@ -22,7 +22,7 @@ DEBUG = 0
 if DEBUG:
     import traceback
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 #
 # Standard Sendmail Constants
