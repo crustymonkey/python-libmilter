@@ -764,7 +764,9 @@ class MilterProtocol(object):
         if data:
             checkData(data , SMFIC_CONNECT)
             hostname , rem = readUntilNull(data[1:])
-            family = rem[0]
+            # rem[0] stores the ascii code of the family character as an integer
+            # for example, ascii character '4' has integer value 52.
+            family = rem[0:1]
             if family != SMFIA_UNKNOWN:
                 port = unpack_uint16(rem[1:3])
                 ip = rem[3:-1]
