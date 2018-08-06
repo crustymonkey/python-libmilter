@@ -935,7 +935,7 @@ class MilterProtocol(object):
         NOTE: This can ONLY be called in eob()
         """
         if esmtpAdd:
-            if not SMFIF_ADDRCPT_PAR & self._opts & self._mtaopts:
+            if not SMFIF_ADDRCPT_PAR & self._opts & self._mtaOpts:
                 print('Add recipient par called without the proper opts set')
                 return
             req = SMFIR_ADDRCPT_PAR + rcpt + b'\0' + esmtpAdd + b'\0'
