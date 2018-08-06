@@ -22,7 +22,7 @@ DEBUG = 0
 if DEBUG:
     import traceback
 
-__version__ = '1.0.1'
+__version__ = '1.0.3'
 
 #
 # Standard Sendmail Constants
@@ -467,7 +467,6 @@ class ThreadMixin(threading.Thread):
                 if DEBUG:
                     traceback.print_exc()
                     debug('AN EXCEPTION OCCURED: %s' % e , 1 , self.id)
-                self.send(TEMPFAIL)
                 self.connectionLost()
                 break
 # }}}
@@ -509,7 +508,6 @@ class ForkMixin(object):
                 if DEBUG:
                     traceback.print_exc()
                     debug('AN EXCEPTION OCCURED: %s' % e , 1 , self.id)
-                self.send(TEMPFAIL)
                 self.connectionLost()
                 break
         #self.log('Exiting child process')
@@ -818,7 +816,7 @@ class MilterProtocol(object):
         rcpt = ''
         if data:
             rcpt = data[1:-1]
-        if 'rcpt_addr' in md:
+        elif 'rcpt_addr' in md:
             rcpt = md['rcpt_addr']
         if 'i' in md:
             self._qid = md['i']
@@ -1265,8 +1263,10 @@ class AsyncFactory(object):
     def run(self):
         global DEFERRED_REG
         if self.sockStr.lower().startswith('inet:'):
-            junk , ip , port = self.sockStr.split(':')
-            self.sock = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+            ip = self.sockStr[5:self.sockStr.rfind(':')]
+            port = self.sockStr[self.sockStr.rfind(':')+1:]
+            (family, socktype, proto, canonname, sockaddr)=socket.getaddrinfo(ip, None)[0]
+            self.sock = socket.socket(family , socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.sock.bind((ip , int(port)))
         else:
@@ -1308,9 +1308,10 @@ class AsyncFactory(object):
                         p.log('AN EXCEPTION OCCURED IN %s: %s' % (p.id , e))
                         if DEBUG:
                             traceback.print_exc()
-                        print('AN EXCEPTION OCCURED IN ' \
-                            '%s: %s' % (p.id , e), file=sys.stderr)
-                        p.send(TEMPFAIL)
+                        if sys.version_info > (3,):
+                            print('AN EXCEPTION OCCURED IN %s: %s' % (p.id , e), file=sys.stderr)
+                        else:
+                            print >> sys.stderr , 'AN EXCEPTION OCCURED IN %s: %s' % (p.id , e)
                         p.connectionLost()
                         self.unregister(fd)
             # Check the deferreds

@@ -18,7 +18,7 @@
 from distutils.core import setup
 
 setup(name='python-libmilter' ,
-    version='1.0.1' ,
+    version='1.0.3' ,
     author='Jay Deiman' ,
     author_email='admin@splitstreams.com' ,
     url='http://stuffivelearned.org/doku.php?id=programming:python:python-libmilter' ,
