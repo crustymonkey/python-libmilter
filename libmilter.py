@@ -928,7 +928,7 @@ class MilterProtocol(object):
     # Message modification methods {{{
     # NOTE: These can ONLY be called from eob()
     #
-    def addRcpt(self , rcpt , esmtpAdd=''):
+    def addRcpt(self , rcpt , esmtpAdd=b''):
         """
         This will tell the MTA to add a recipient to the email
         
@@ -1008,7 +1008,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def quarantine(self , msg=''):
+    def quarantine(self , msg=b''):
         """
         This tells the MTA to quarantine the message (put it in the HOLD
         queue in Postfix).
@@ -1033,7 +1033,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def chgFrom(self , frAddr , esmtpAdd=''):
+    def chgFrom(self , frAddr , esmtpAdd=b''):
         """
         This tells the MTA to change the from address, with optional
         ESMTP extensions
@@ -1308,10 +1308,8 @@ class AsyncFactory(object):
                         p.log('AN EXCEPTION OCCURED IN %s: %s' % (p.id , e))
                         if DEBUG:
                             traceback.print_exc()
-                        if sys.version_info > (3,):
-                            print('AN EXCEPTION OCCURED IN %s: %s' % (p.id , e), file=sys.stderr)
-                        else:
-                            print >> sys.stderr , 'AN EXCEPTION OCCURED IN %s: %s' % (p.id , e)
+                        print('AN EXCEPTION OCCURED IN ' \
+                            '%s: %s' % (p.id , e), file=sys.stderr)
                         p.connectionLost()
                         self.unregister(fd)
             # Check the deferreds
