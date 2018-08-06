@@ -992,7 +992,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def chgHeader(self , key , val='' , index=1):
+    def chgHeader(self , key , val=b'' , index=1):
         """
         This will change a header in the email.  The "key" should be
         exactly what was received in header().  If "val" is empty (''),
