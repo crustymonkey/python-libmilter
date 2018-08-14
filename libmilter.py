@@ -14,7 +14,7 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with python-libmilter.  If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import print_function
 import struct , sys , select , threading , socket , time , os , signal
 
 # Turn debugging on or off
@@ -22,7 +22,7 @@ DEBUG = 0
 if DEBUG:
     import traceback
 
-__version__ = '1.0.1'
+__version__ = '1.0.3'
 
 #
 # Standard Sendmail Constants
@@ -467,7 +467,6 @@ class ThreadMixin(threading.Thread):
                 if DEBUG:
                     traceback.print_exc()
                     debug('AN EXCEPTION OCCURED: %s' % e , 1 , self.id)
-                self.send(TEMPFAIL)
                 self.connectionLost()
                 break
 # }}}
@@ -509,7 +508,6 @@ class ForkMixin(object):
                 if DEBUG:
                     traceback.print_exc()
                     debug('AN EXCEPTION OCCURED: %s' % e , 1 , self.id)
-                self.send(TEMPFAIL)
                 self.connectionLost()
                 break
         #self.log('Exiting child process')
@@ -764,7 +762,9 @@ class MilterProtocol(object):
         if data:
             checkData(data , SMFIC_CONNECT)
             hostname , rem = readUntilNull(data[1:])
-            family = rem[0]
+            # rem[0] stores the ascii code of the family character as an integer
+            # for example, ascii character '4' has integer value 52.
+            family = rem[0:1]
             if family != SMFIA_UNKNOWN:
                 port = unpack_uint16(rem[1:3])
                 ip = rem[3:-1]
@@ -816,7 +816,7 @@ class MilterProtocol(object):
         rcpt = ''
         if data:
             rcpt = data[1:-1]
-        if 'rcpt_addr' in md:
+        elif 'rcpt_addr' in md:
             rcpt = md['rcpt_addr']
         if 'i' in md:
             self._qid = md['i']
@@ -928,14 +928,14 @@ class MilterProtocol(object):
     # Message modification methods {{{
     # NOTE: These can ONLY be called from eob()
     #
-    def addRcpt(self , rcpt , esmtpAdd=''):
+    def addRcpt(self , rcpt , esmtpAdd=b''):
         """
         This will tell the MTA to add a recipient to the email
         
         NOTE: This can ONLY be called in eob()
         """
         if esmtpAdd:
-            if not SMFIF_ADDRCPT_PAR & self._opts & self._mtaopts:
+            if not SMFIF_ADDRCPT_PAR & self._opts & self._mtaOpts:
                 print('Add recipient par called without the proper opts set')
                 return
             req = SMFIR_ADDRCPT_PAR + rcpt + b'\0' + esmtpAdd + b'\0'
@@ -990,7 +990,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def chgHeader(self , key , val='' , index=1):
+    def chgHeader(self , key , val=b'' , index=1):
         """
         This will change a header in the email.  The "key" should be
         exactly what was received in header().  If "val" is empty (''),
@@ -1008,7 +1008,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def quarantine(self , msg=''):
+    def quarantine(self , msg=b''):
         """
         This tells the MTA to quarantine the message (put it in the HOLD
         queue in Postfix).
@@ -1033,7 +1033,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def chgFrom(self , frAddr , esmtpAdd=''):
+    def chgFrom(self , frAddr , esmtpAdd=b''):
         """
         This tells the MTA to change the from address, with optional
         ESMTP extensions
@@ -1263,8 +1263,10 @@ class AsyncFactory(object):
     def run(self):
         global DEFERRED_REG
         if self.sockStr.lower().startswith('inet:'):
-            junk , ip , port = self.sockStr.split(':')
-            self.sock = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+            ip = self.sockStr[5:self.sockStr.rfind(':')]
+            port = self.sockStr[self.sockStr.rfind(':')+1:]
+            (family, socktype, proto, canonname, sockaddr)=socket.getaddrinfo(ip, None)[0]
+            self.sock = socket.socket(family , socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.sock.bind((ip , int(port)))
         else:
@@ -1308,7 +1310,6 @@ class AsyncFactory(object):
                             traceback.print_exc()
                         print('AN EXCEPTION OCCURED IN ' \
                             '%s: %s' % (p.id , e), file=sys.stderr)
-                        p.send(TEMPFAIL)
                         p.connectionLost()
                         self.unregister(fd)
             # Check the deferreds
