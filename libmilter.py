@@ -479,6 +479,7 @@ class ForkMixin(object):
             self.run()
             os._exit(0)
         else:
+            self.transport.close()
             return
 
     def run(self):
