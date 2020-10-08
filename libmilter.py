@@ -798,10 +798,10 @@ class MilterProtocol(object):
         if data:
             mfrom = data[1:-1]
         # Return the mail from address parsed by the MTA, if possible
-        if 'mail_addr' in md:
-            mfrom = md['mail_addr']
-        if 'i' in md:
-            self._qid = md['i']
+        if b'mail_addr' in md:
+            mfrom = md[b'mail_addr']
+        if b'i' in md:
+            self._qid = md[b'i']
         return self.mailFrom(mfrom , md)
 
     def _rcpt(self, cmd, data):
@@ -833,8 +833,8 @@ class MilterProtocol(object):
         data = data[0]
         key = ''
         val = ''
-        if 'i' in md:
-            self._qid = md['i']
+        if b'i' in md:
+            self._qid = md[b'i']
         if data:
             key, rem = readUntilNull(data[1:])
             val, rem = readUntilNull(rem)
@@ -851,8 +851,8 @@ class MilterProtocol(object):
         md = {}
         if cmd is not None:
             md = dictFromCmd(cmd[2:])
-        if 'i' in md:
-            self._qid = md['i']
+        if b'i' in md:
+            self._qid = md[b'i']
         return self.eoh(md)
 
     def _data(self, cmd, data):
@@ -862,8 +862,8 @@ class MilterProtocol(object):
         md = {}
         if cmd is not None:
             md = dictFromCmd(cmd[2:])
-        if 'i' in md:
-            self._qid = md['i']
+        if b'i' in md:
+            self._qid = md[b'i']
         return self.data(md)
 
     def _body(self, cmd, data):
@@ -876,8 +876,8 @@ class MilterProtocol(object):
         if cmd is not None:
             md = dictFromCmd(cmd[2:])
         chunk = ''
-        if 'i' in md:
-            self._qid = md['i']
+        if b'i' in md:
+            self._qid = md[b'i']
         if data:
             chunk = data[1:]
         return self.body(chunk, md)
@@ -890,8 +890,8 @@ class MilterProtocol(object):
         md = {}
         if cmd is not None:
             md = dictFromCmd(cmd[2:])
-        if 'i' in md:
-            self._qid = md['i']
+        if b'i' in md:
+            self._qid = md[b'i']
         ret = self.eob(md)
         return ret
 
