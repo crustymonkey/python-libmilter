@@ -1,5 +1,8 @@
 # python-libmilter #
 
+## NO LONGER SUPPORTING
+I'm no longer supporting this module at this time.  I will accept pull requests for fixes, but I'm no longer actively working on this project (and haven't for quite some time).  I haven't maintained mail servers in about 8 years (at the time of this addition), and therefore I don't have a great way of testing this module.  Again, I will continue to take pull requests for changes for this.
+
 ## INSTALL ##
 
 1. If you have a .tar.gz, extract that first.
