@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 
 # This file is part of python-libmilter.
 # 
@@ -19,8 +19,10 @@
 # This is a basic milter for testing
 #
 
+
 import libmilter as lm
-import sys , time
+import sys, time
+import signal, traceback
 
 #
 # We are going to use an example of a forking version of our milter.  This is
@@ -29,86 +31,84 @@ import sys , time
 
 # Create our milter class with the forking mixin and the regular milter
 # protocol base classes
-class TestMilter(lm.ForkMixin , lm.MilterProtocol):
-    def __init__(self , opts=0 , protos=0):
+class TestMilter(lm.ForkMixin, lm.MilterProtocol):
+    def __init__(self, opts=0, protos=0):
         # We must init our parents here
-        lm.MilterProtocol.__init__(self , opts , protos)
+        lm.MilterProtocol.__init__(self, opts, protos)
         lm.ForkMixin.__init__(self)
         # You can initialize more stuff here
 
-    def log(self , msg):
-        t = time.strftime('%H:%M:%S')
-        print '[%s] %s' % (t , msg)
+    def log(self, msg):
+        t = time.strftime("%H:%M:%S")
+        print(f"[{t}] {msg}")
         sys.stdout.flush()
 
     @lm.noReply
-    def connect(self , hostname , family , ip , port , cmdDict):
-        self.log('Connect from %s:%d (%s) with family: %s' % (ip , port ,
-            hostname , family))
+    def connect(self, hostname, family, ip, port, cmdDict):
+        self.log(f"Connect from {ip}:{port} ({hostname}) with family: {family}")
         return lm.CONTINUE
 
     @lm.noReply
-    def helo(self , heloname):
-        self.log('HELO: %s' % heloname)
+    def helo(self, heloname):
+        self.log(f"HELO: {heloname}")
         return lm.CONTINUE
 
     @lm.noReply
-    def mailFrom(self , frAddr , cmdDict):
-        self.log('MAIL: %s' % frAddr)
+    def mailFrom(self, frAddr, cmdDict):
+        self.log(f"MAIL: {frAddr}")
         return lm.CONTINUE
 
     @lm.noReply
-    def rcpt(self , recip , cmdDict):
-        self.log('RCPT: %s' % recip)
+    def rcpt(self, recip, cmdDict):
+        self.log(f"RCPT: {recip}")
         return lm.CONTINUE
 
     @lm.noReply
-    def header(self , key , val , cmdDict):
-        self.log('%s: %s' % (key , val))
+    def header(self, key, val, cmdDict):
+        self.log(f"{key}: {val}")
         return lm.CONTINUE
 
     @lm.noReply
-    def eoh(self , cmdDict):
-        self.log('EOH')
+    def eoh(self, cmdDict):
+        self.log("EOH")
         return lm.CONTINUE
 
-    def data(self , cmdDict):
-        self.log('DATA')
+    def data(self, cmdDict):
+        self.log("DATA")
         return lm.CONTINUE
 
     @lm.noReply
-    def body(self , chunk , cmdDict):
-        self.log('Body chunk: %d' % len(chunk))
+    def body(self, chunk, cmdDict):
+        self.log(f'Body chunk: {len(chunk)}')
         return lm.CONTINUE
 
-    def eob(self , cmdDict):
-        self.log('EOB')
-        #self.setReply('554' , '5.7.1' , 'Rejected because I said so')
+    def eob(self, cmdDict):
+        self.log("EOB")
+        #self.setReply("554" , "5.7.1" , "Rejected because I said so")
         return lm.CONTINUE
 
     def close(self):
-        self.log('Close called. QID: %s' % self._qid)
+        self.log(f"Close called. QID: {self._qid}")
 
 def runTestMilter():
-    import signal , traceback
     # We can set our milter opts here
     opts = lm.SMFIF_CHGFROM | lm.SMFIF_ADDRCPT | lm.SMFIF_QUARANTINE
 
     # We initialize the factory we want to use (you can choose from an 
     # AsyncFactory, ForkFactory or ThreadFactory.  You must use the
     # appropriate mixin classes for your milter for Thread and Fork)
-    f = lm.ForkFactory('inet:127.0.0.1:5000' , TestMilter , opts)
-    def sigHandler(num , frame):
+    f = lm.ForkFactory("inet:127.0.0.1:5000", TestMilter, opts)
+    def sigHandler(num, frame):
         f.close()
         sys.exit(0)
-    signal.signal(signal.SIGINT , sigHandler)
+    signal.signal(signal.SIGINT, sigHandler)
     try:
         # run it
         f.run()
-    except Exception , e:
+    except Exception as e:
         f.close()
-        print >> sys.stderr , 'EXCEPTION OCCURED: %s' % e
-        traceback.print_tb(sys.exc_traceback)
+        print(f"EXCEPTION OCCURED: {e}", file=sys.stderr)
+        print(traceback.format_exc())
         sys.exit(3)
 
 if __name__ == '__main__':
