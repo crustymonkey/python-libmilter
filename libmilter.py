@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # This file is part of python-libmilter.
 # 
@@ -14,8 +14,7 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with python-libmilter.  If not, see <http://www.gnu.org/licenses/>.
-from __future__ import print_function
-import struct , sys , select , threading , socket , time , os , signal
+import struct, sys, select, threading, socket, time, os, signal
 
 # Turn debugging on or off
 DEBUG = 0
@@ -45,15 +44,15 @@ SMFIF_ALLOPTS_V6 = SMFIF_CHGFROM | SMFIF_ADDRCPT_PAR | SMFIF_SETSYMLIST
 SMFIF_ALLOPTS = SMFIF_ALLOPTS_V2 | SMFIF_ALLOPTS_V6
 
 SMFIF_OPTS = {
-    SMFIF_ADDHDRS: 'addhdrs' ,
-    SMFIF_CHGBODY: 'chgbody' ,
-    SMFIF_ADDRCPT: 'addrcpt' ,
-    SMFIF_DELRCPT: 'delrcpt' ,
-    SMFIF_CHGHDRS: 'chghdrs' ,
-    SMFIF_QUARANTINE: 'quarantine' ,
-    SMFIF_CHGFROM: 'chgfrom' ,
-    SMFIF_ADDRCPT_PAR: 'addrcpt_wargs' ,
-    SMFIF_SETSYMLIST: 'setsymlist' ,
+    SMFIF_ADDHDRS: 'addhdrs',
+    SMFIF_CHGBODY: 'chgbody',
+    SMFIF_ADDRCPT: 'addrcpt',
+    SMFIF_DELRCPT: 'delrcpt',
+    SMFIF_CHGHDRS: 'chghdrs',
+    SMFIF_QUARANTINE: 'quarantine',
+    SMFIF_CHGFROM: 'chgfrom',
+    SMFIF_ADDRCPT_PAR: 'addrcpt_wargs',
+    SMFIF_SETSYMLIST: 'setsymlist',
 }
 # }}}
 
@@ -93,26 +92,26 @@ SMFIP_ALLPROTOS = SMFIP_ALLPROTOS_V2 | SMFIP_ALLPROTOS_V6
 
 SMFIP_PROTOS = {
     SMFIP_NOCONNECT: 'noconnect',
-    SMFIP_NOHELO: 'nohelo' ,
-    SMFIP_NOMAIL: 'nomail' ,
-    SMFIP_NORCPT: 'norcpt' ,
-    SMFIP_NOBODY: 'nobody' ,
-    SMFIP_NOHDRS: 'nohdrs' ,
-    SMFIP_NOEOH: 'noeoh' ,
-    SMFIP_NOUNKNOWN: 'nounknown' ,
-    SMFIP_NODATA: 'nodata' ,
-    SMFIP_SKIP: 'skip' ,
-    SMFIP_RCPT_REJ: 'wantrej' ,
-    SMFIP_NR_HDR: 'noreplhdr' ,
-    SMFIP_NR_CONN: 'noreplconn' ,
-    SMFIP_NR_HELO: 'noreplhelo' ,
-    SMFIP_NR_MAIL: 'noreplmail' ,
-    SMFIP_NR_RCPT: 'noreplrcpt' ,
-    SMFIP_NR_DATA: 'norepldata' ,
-    SMFIP_NR_UNKN: 'noreplunkn' ,
-    SMFIP_NR_EOH: 'norepleoh' ,
-    SMFIP_NR_BODY: 'noreplbody' ,
-    SMFIP_HDR_LEADSPC: 'hdrleadspc' ,
+    SMFIP_NOHELO: 'nohelo',
+    SMFIP_NOMAIL: 'nomail',
+    SMFIP_NORCPT: 'norcpt',
+    SMFIP_NOBODY: 'nobody',
+    SMFIP_NOHDRS: 'nohdrs',
+    SMFIP_NOEOH: 'noeoh',
+    SMFIP_NOUNKNOWN: 'nounknown',
+    SMFIP_NODATA: 'nodata',
+    SMFIP_SKIP: 'skip',
+    SMFIP_RCPT_REJ: 'wantrej',
+    SMFIP_NR_HDR: 'noreplhdr',
+    SMFIP_NR_CONN: 'noreplconn',
+    SMFIP_NR_HELO: 'noreplhelo',
+    SMFIP_NR_MAIL: 'noreplmail',
+    SMFIP_NR_RCPT: 'noreplrcpt',
+    SMFIP_NR_DATA: 'norepldata',
+    SMFIP_NR_UNKN: 'noreplunkn',
+    SMFIP_NR_EOH: 'norepleoh',
+    SMFIP_NR_BODY: 'noreplbody',
+    SMFIP_HDR_LEADSPC: 'hdrleadspc',
 }
 # }}}
 
@@ -142,7 +141,7 @@ SMFIC_UNKNOWN = b'U'         # Any unknown command
 SMFIC_QUIT_NC = b'K'         # Quit + new connection
 
 # My shortcut for body related macros
-SMFIC_BODY_MACS = (SMFIC_DATA , SMFIC_HEADER , SMFIC_EOH , SMFIC_BODY)
+SMFIC_BODY_MACS = (SMFIC_DATA, SMFIC_HEADER, SMFIC_EOH, SMFIC_BODY)
 # }}}
 
 # Responses/commands that we send to the MTA (SMFIR_*) {{{ 
@@ -189,27 +188,27 @@ MILTER_CHUNK_SIZE = 65536
 
 # Optional callbacks
 optCBs = {
-    'connect': (SMFIP_NOCONNECT , SMFIP_NR_CONN) ,
-    'helo': (SMFIP_NOHELO , SMFIP_NR_HELO) ,
-    'mailFrom': (SMFIP_NOMAIL , SMFIP_NR_MAIL) ,
-    'rcpt': (SMFIP_NORCPT , SMFIP_NR_RCPT) ,
-    'header': (SMFIP_NOHDRS , SMFIP_NR_HDR) ,
-    'eoh': (SMFIP_NOEOH , SMFIP_NR_EOH) ,
-    'data': (SMFIP_NODATA , SMFIP_NR_DATA) ,
-    'body': (SMFIP_NOBODY , SMFIP_NR_BODY) ,
-    'unknown': (SMFIP_NOUNKNOWN , SMFIP_NR_UNKN) ,
+    'connect': (SMFIP_NOCONNECT, SMFIP_NR_CONN),
+    'helo': (SMFIP_NOHELO, SMFIP_NR_HELO),
+    'mailFrom': (SMFIP_NOMAIL, SMFIP_NR_MAIL),
+    'rcpt': (SMFIP_NORCPT, SMFIP_NR_RCPT),
+    'header': (SMFIP_NOHDRS, SMFIP_NR_HDR),
+    'eoh': (SMFIP_NOEOH, SMFIP_NR_EOH),
+    'data': (SMFIP_NODATA, SMFIP_NR_DATA),
+    'body': (SMFIP_NOBODY, SMFIP_NR_BODY),
+    'unknown': (SMFIP_NOUNKNOWN, SMFIP_NR_UNKN),
 }
 
 protoMap = {
-    SMFIC_CONNECT: 'connect' ,
-    SMFIC_HELO: 'helo' ,
-    SMFIC_MAIL: 'mailFrom' ,
-    SMFIC_RCPT: 'rcpt' ,
-    SMFIC_HEADER: 'header' ,
-    SMFIC_EOH: 'eoh' ,
-    SMFIC_DATA: 'data' ,
-    SMFIC_BODY: 'body' ,
-    SMFIC_UNKNOWN: 'unknown' ,
+    SMFIC_CONNECT: 'connect',
+    SMFIC_HELO: 'helo',
+    SMFIC_MAIL: 'mailFrom',
+    SMFIC_RCPT: 'rcpt',
+    SMFIC_HEADER: 'header',
+    SMFIC_EOH: 'eoh',
+    SMFIC_DATA: 'data',
+    SMFIC_BODY: 'body',
+    SMFIC_UNKNOWN: 'unknown',
 }
 
 # Milter version global for use by the decorators during init
@@ -223,8 +222,8 @@ DEFERRED_REG = set()
 # Exceptions {{{
 #
 class InvalidPacket(Exception):
-    def __init__(self , partialPacket , cmds , *args , **kwargs):
-        Exception.__init__(self , *args , **kwargs)
+    def __init__(self, partialPacket, cmds, *args, **kwargs):
+        Exception.__init__(self, *args, **kwargs)
         self.pp = partialPacket
         self.partialPacket = self.pp
         self.cmds = cmds
@@ -246,42 +245,42 @@ class Deferred(object):
     pass
 
 class DeferToThread(Deferred):
-    def __init__(self , cb , *args , **kwargs):
+    def __init__(self, cb, *args, **kwargs):
         global DEFERRED_REG
         self.result = None
         self.completed = False
         self.error = None
         self.callbacks = []
         self.errbacks = []
-        t = threading.Thread(target=self._wrapper , args=(cb , args , kwargs))
+        t = threading.Thread(target=self._wrapper, args=(cb, args, kwargs))
         t.daemon = True
         t.start()
         DEFERRED_REG.add(self)
 
-    def _wrapper(self , cb , args , kwargs):
+    def _wrapper(self, cb, args, kwargs):
         try:
-            self.result = cb(*args , **kwargs)
+            self.result = cb(*args, **kwargs)
         except Exception as e:
             self.error = e
         self.completed = True
 
-    def addCallback(self , cb , *args , **kwargs):
-        self.callbacks.append((cb , args , kwargs))
+    def addCallback(self, cb, *args, **kwargs):
+        self.callbacks.append((cb, args, kwargs))
 
-    def addErrback(self , eb , *args , **kwargs):
-        self.errbacks.append((eb , args , kwargs))
+    def addErrback(self, eb, *args, **kwargs):
+        self.errbacks.append((eb, args, kwargs))
 
     def callCallbacks(self):
         if not self.completed: return
-        for cb , a , kw in self.callbacks:
-            cb(self.result , *a , **kw)
+        for cb, a, kw in self.callbacks:
+            cb(self.result, *a, **kw)
         del self.callbacks
         del self.errbacks
 
     def callErrbacks(self):
         if not self.completed: return
-        for cb , a , kw in self.errbacks:
-            cb(self.error , *a , **kw)
+        for cb, a, kw in self.errbacks:
+            cb(self.error, *a, **kw)
         del self.callbacks
         del self.errbacks
 # }}}
@@ -296,24 +295,24 @@ def getId():
     return idCounter
 
 def pack_uint32(i):
-    return struct.pack('!I' , i)
+    return struct.pack('!I', i)
 
 def pack_uint16(i):
-    return struct.pack('!H' , i)
+    return struct.pack('!H', i)
 
 def unpack_uint32(s):
-    return struct.unpack('!I' , s)[0]
+    return struct.unpack('!I', s)[0]
 
 def unpack_uint16(s):
-    return struct.unpack('!H' , s)[0]
+    return struct.unpack('!H', s)[0]
 
 def parse_packet(p):
     ret = []
     remaining = 0
     while p:
         if len(p) < 4:
-            raise InvalidPacket(p , ret , 'The packet is too small to '
-                'contain any info (%d): %r' % (len(p) , p))
+            raise InvalidPacket(p, ret, 'The packet is too small to '
+                'contain any info (%d): %r' % (len(p), p))
         length = unpack_uint32(p[:4])
         pend = length + 4
         contents = p[4:pend]
@@ -321,39 +320,39 @@ def parse_packet(p):
             remaining = length - len(contents)
         ret.append(contents)
         p = p[pend:]
-    return (ret , remaining)
+    return (ret, remaining)
 
 def readUntilNull(s):
     """
     Read a string until a null is encountered
 
-    returns (string up to null , remainder after null)
+    returns (string up to null, remainder after null)
     """
-    item = s.split(b'\0' , 1)
+    item = s.split(b'\0', 1)
     if len(item) == 1:
-        return (item[0] , None)
+        return (item[0], None)
     else:
-        return (item[0] , item[1])
+        return (item[0], item[1])
 
-def checkData(data , macro):
+def checkData(data, macro):
     if not data[:1] == macro:
         raise UnknownError('Command does not start with correct '
-                'MACRO: %s (%s) should be %s' % (data[:1] , data , macro))
+                'MACRO: %s (%s) should be %s' % (data[:1], data, macro))
 
 def dictFromCmd(cmd):
     d = {}
     while cmd and len(cmd) > 1:
-        key , rem = readUntilNull(cmd)
+        key, rem = readUntilNull(cmd)
         key = key.strip(b'{}')
         if rem:
-            val , rem = readUntilNull(rem)
+            val, rem = readUntilNull(rem)
         else:
             val = None
         d[key] = val
         cmd = rem
     return d
 
-def debug(msg , level=1 , protId=0):
+def debug(msg, level=1, protId=0):
     if not DEBUG: return
     if level <= DEBUG:
         out = '[%s] DEBUG: ' % time.strftime('%H:%M:%S')
@@ -382,21 +381,21 @@ SHUTDOWN = pack_uint32(1) + SMFIR_SHUTDOWN
 # Decorators {{{
 #
 def callInThread(f):
-    def newF(*args , **kwargs):
+    def newF(*args, **kwargs):
         inst = args[0]
-        defrd = DeferToThread(f , *args , **kwargs)
-        defrd.addCallback(_onCITSuccess , inst)
-        defrd.addErrback(_onCITFail , inst)
+        defrd = DeferToThread(f, *args, **kwargs)
+        defrd.addCallback(_onCITSuccess, inst)
+        defrd.addErrback(_onCITFail, inst)
         return defrd
     return newF
 
 # callInThread success callback
-def _onCITSuccess(res , inst):
+def _onCITSuccess(res, inst):
     if res:
         inst.send(res)
 
 # callInThread fail callback
-def _onCITFail(fail , inst):
+def _onCITFail(fail, inst):
     inst.log(str(fail))
 
 # Use this decorator when the callback should not be sent from the MTA
@@ -406,7 +405,7 @@ def noCallback(f):
     if not fname in optCBs:
         raise RequiredCallbackError('function %s is NOT an optional callback' %
             fname)
-    def newF(*args , **kwargs):
+    def newF(*args, **kwargs):
         pass
     newF.protos = optCBs[fname][0]
     return newF
@@ -419,8 +418,8 @@ def noReply(f):
         raise RequiredCallbackError('function %s is NOT an optional callback' %
             fname)
     _milterVersion = 6
-    def newF(*args , **kwargs):
-        return f(*args , **kwargs)
+    def newF(*args, **kwargs):
+        return f(*args, **kwargs)
     newF.protos = optCBs[fname][1]
     return newF
 # }}}
@@ -463,10 +462,10 @@ class ThreadMixin(threading.Thread):
             try:
                 self.dataReceived(buf)
             except Exception as e:
-                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id , e))
+                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id, e))
                 if DEBUG:
                     traceback.print_exc()
-                    debug('AN EXCEPTION OCCURED: %s' % e , 1 , self.id)
+                    debug('AN EXCEPTION OCCURED: %s' % e, 1, self.id)
                 self.connectionLost()
                 break
 # }}}
@@ -505,10 +504,10 @@ class ForkMixin(object):
             try:
                 self.dataReceived(buf)
             except Exception as e:
-                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id , e))
+                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id, e))
                 if DEBUG:
                     traceback.print_exc()
-                    debug('AN EXCEPTION OCCURED: %s' % e , 1 , self.id)
+                    debug('AN EXCEPTION OCCURED: %s' % e, 1, self.id)
                 self.connectionLost()
                 break
         #self.log('Exiting child process')
@@ -521,7 +520,7 @@ class MilterProtocol(object):
     Subclass this and implement the overridable callbacks.
     """
     # Class vars and __init__() {{{
-    def __init__(self , opts=0 , protos=0):
+    def __init__(self, opts=0, protos=0):
         """
         Initialize all the instance variables
         """
@@ -533,8 +532,8 @@ class MilterProtocol(object):
         if self._opts & SMFIF_ALLOPTS_V6:
             self.milterVersion = 6
         for fname in optCBs:
-            f = getattr(self , fname)
-            p = getattr(f , 'protos' , 0)
+            f = getattr(self, fname)
+            p = getattr(f, 'protos', 0)
             self.protos |= p
         self.closed = False
         self._qid = None         # The Queue ID assigned by the MTA       
@@ -548,32 +547,32 @@ class MilterProtocol(object):
         self._partialHeader = None
         self._lastMacro = None
         self._MACMAP = {
-            SMFIC_CONNECT: self._connect ,
-            SMFIC_HELO: self._helo ,
-            SMFIC_MAIL: self._mailFrom ,
-            SMFIC_RCPT: self._rcpt ,
-            SMFIC_HEADER: self._header ,
-            SMFIC_EOH: self._eoh ,
-            SMFIC_DATA: self._data ,
-            SMFIC_BODY: self._body ,
-            SMFIC_BODYEOB: self._eob ,
-            SMFIC_ABORT: self._abort ,
-            SMFIC_QUIT: self._close ,
-            SMFIC_UNKNOWN: self._unknown ,
+            SMFIC_CONNECT: self._connect,
+            SMFIC_HELO: self._helo,
+            SMFIC_MAIL: self._mailFrom,
+            SMFIC_RCPT: self._rcpt,
+            SMFIC_HEADER: self._header,
+            SMFIC_EOH: self._eoh,
+            SMFIC_DATA: self._data,
+            SMFIC_BODY: self._body,
+            SMFIC_BODYEOB: self._eob,
+            SMFIC_ABORT: self._abort,
+            SMFIC_QUIT: self._close,
+            SMFIC_UNKNOWN: self._unknown,
         }
     # }}}
 
     #
     # Twisted method implementations {{{
     #
-    def connectionLost(self , reason=None):
+    def connectionLost(self, reason=None):
         """
         The connection is lost, so we call the close method if it hasn't
         already been called
         """
         self._close()
 
-    def dataReceived(self , buf):
+    def dataReceived(self, buf):
         """
         This is the raw data receiver that calls the appropriate
         callbacks based on what is received from the MTA
@@ -581,15 +580,15 @@ class MilterProtocol(object):
         remaining = 0
         cmds = []
         pheader = ''
-        debug('raw buf: %r' % buf , 4 , self.id)
+        debug('raw buf: %r' % buf, 4, self.id)
         if self._partialHeader:
             pheader = self._partialHeader
-            debug('Working a partial header: %r ; cmds: %r' % (pheader , cmds) ,
-                4 , self.id)
+            debug('Working a partial header: %r ; cmds: %r' % (pheader, cmds),
+                4, self.id)
             buf = pheader + buf
             self._partialHeader = None
         if self._partial:
-            remaining , pcmds = self._partial
+            remaining, pcmds = self._partial
             self._partial = None
             buflen = len(buf)
             pcmds[-1] += buf[:remaining]
@@ -598,27 +597,27 @@ class MilterProtocol(object):
             debug('Got a chunk of a partial: len: %d ; ' % buflen +
                 'end of prev buf: %r ; ' % cmds[-1][-10:] +
                 'start of new buf: %r ; ' % buf[:10] +
-                'qid: %s ; ' % self._qid , 4 , self.id)
+                'qid: %s ; ' % self._qid, 4, self.id)
             if buflen < remaining:
                 remaining -= buflen
-                self._partial = (remaining , cmds)
+                self._partial = (remaining, cmds)
                 return
             remaining = 0
         if buf:
             curcmds = []
             try:
-                curcmds , remaining = parse_packet(buf)
+                curcmds, remaining = parse_packet(buf)
             except InvalidPacket as e:
                 debug('Found a partial header: %r; cmdlen: %d ; buf: %r' % 
-                    (e.pp , len(e.cmds) , buf) , 2 , self.id)
+                    (e.pp, len(e.cmds), buf), 2, self.id)
                 cmds.extend(e.cmds)
                 self._partialHeader = e.pp
             else:
                 cmds.extend(curcmds)
-        debug('parsed packet, %d cmds , %d remaining: cmds: %r ; qid: %s' % 
-            (len(cmds) , remaining , cmds , self._qid) , 2 , self.id)
+        debug('parsed packet, %d cmds, %d remaining: cmds: %r ; qid: %s' % 
+            (len(cmds), remaining, cmds, self._qid), 2, self.id)
         if remaining:
-            self._partial = (remaining , cmds[-1:])
+            self._partial = (remaining, cmds[-1:])
             cmds = cmds[:-1]
         if cmds:
             self._procCmdAndData(cmds)
@@ -627,10 +626,10 @@ class MilterProtocol(object):
     #
     # Utility functions {{{
     #
-    def _procCmdAndData(self , cmds):
+    def _procCmdAndData(self, cmds):
         skipNum = 0
         toSend = ''
-        for i , cmd in enumerate(cmds):
+        for i, cmd in enumerate(cmds):
             toSend = ''
             mtype = ''
             firstLet = cmd[:1]
@@ -638,7 +637,7 @@ class MilterProtocol(object):
                 skipNum -= 1
                 continue
             elif firstLet == SMFIC_OPTNEG:
-                debug('MTA OPTS: %r' % cmd , 4 , self.id)
+                debug('MTA OPTS: %r' % cmd, 4, self.id)
                 toSend = self._negotiate(cmd)
             elif firstLet == SMFIC_ABORT:
                 self._abort()
@@ -659,7 +658,7 @@ class MilterProtocol(object):
                 pass
             elif mtype not in self._MACMAP:
                 raise UnsupportedError('Unsupported MACRO in '
-                    '%d: %s (%s)' % (self.id , mtype , cmd))
+                    '%d: %s (%s)' % (self.id, mtype, cmd))
             else:
                 lmtype = None
                 if self._lastMacro is not None and len(self._lastMacro) > 1:
@@ -672,26 +671,26 @@ class MilterProtocol(object):
                     nc = optCBs[protoMap[mtype]][0]
                     nr = optCBs[protoMap[mtype]][1]
                     if self.protos & nc:
-                        debug('No callback set for %r' % self._MACMAP[mtype] ,
-                            4 , self.id)
+                        debug('No callback set for %r' % self._MACMAP[mtype],
+                            4, self.id)
                         # There is a nocallback set for this, just continue
                         continue
                     elif self.protos & nr:
                         # No reply for this, just run it and discard 
                         # the response
-                        debug('No response set for %r' % self._MACMAP[mtype] ,
-                            4 , self.id)
-                        self._MACMAP[mtype](macro , d)
+                        debug('No response set for %r' % self._MACMAP[mtype],
+                            4, self.id)
+                        self._MACMAP[mtype](macro, d)
                         continue
                 # Run it and send back to the MTA
-                debug('Calling %r for qid: %s' % (self._MACMAP[mtype] , 
-                    self._qid) , 4 , self.id)
-                toSend = self._MACMAP[mtype](macro , d)
+                debug('Calling %r for qid: %s' % (self._MACMAP[mtype], 
+                    self._qid), 4, self.id)
+                toSend = self._MACMAP[mtype](macro, d)
                 if not toSend:
                     # If there was not a return value and we get here, toSend
                     # should be set to CONTINUE
                     toSend = CONTINUE
-            if toSend and not isinstance(toSend , Deferred):
+            if toSend and not isinstance(toSend, Deferred):
                 self.send(toSend)
     
     def _getOptnegPkt(self):
@@ -706,26 +705,26 @@ class MilterProtocol(object):
         s = pack_uint32(len(s)) + s
         return s
 
-    def log(self , msg):
+    def log(self, msg):
         """
         Override this in a subclass to display messages
         """
         pass
 
-    def send(self , msg):
+    def send(self, msg):
         """
         A simple wrapper for self.transport.sendall
         """
         self._sockLock.acquire()
         try:
-            debug('Sending: %r' % msg , 4 , self.id)
+            debug('Sending: %r' % msg, 4, self.id)
             self.transport.sendall(msg)
         except AttributeError as e:
-            emsg = 'AttributeError sending %s: %s' % (msg , e)
+            emsg = 'AttributeError sending %s: %s' % (msg, e)
             self.log(emsg)
             debug(emsg)
         except socket.error as e:
-            emsg = 'Socket Error sending %s: %s' % (msg , e)
+            emsg = 'Socket Error sending %s: %s' % (msg, e)
             self.log(emsg)
             debug(emsg)
         self._sockLock.release()
@@ -735,22 +734,22 @@ class MilterProtocol(object):
     # Raw data callbacks {{{
     # DO NOT OVERRIDE THESE UNLESS YOU KNOW WHAT YOU ARE DOING!!
     #
-    def _negotiate(self , cmd):
+    def _negotiate(self, cmd):
         """
         Handles the opening optneg packet from the MTA
         """
         cmd = cmd[1:]
-        v , mtaOpts , mtaProtos = struct.unpack('!III' , cmd)
+        v, mtaOpts, mtaProtos = struct.unpack('!III', cmd)
         self._mtaVersion = v
         self._mtaOpts = mtaOpts
         self._mtaProtos = mtaProtos
         return self._getOptnegPkt()
 
-    def _connect(self , cmd , data):
+    def _connect(self, cmd, data):
         """
         Parses the connect info from the MTA, calling the connect()
-        method with (<reverse hostname> , <ip family> , <ip addr> , 
-            <port> , <cmdDict>)
+        method with (<reverse hostname>, <ip family>, <ip addr>, 
+            <port>, <cmdDict>)
         """
         md = {}
         if cmd is not None:
@@ -761,17 +760,17 @@ class MilterProtocol(object):
         port = -1
         ip = b''
         if data:
-            checkData(data , SMFIC_CONNECT)
-            hostname , rem = readUntilNull(data[1:])
+            checkData(data, SMFIC_CONNECT)
+            hostname, rem = readUntilNull(data[1:])
             # rem[0] stores the ascii code of the family character as an integer
             # for example, ascii character '4' has integer value 52.
             family = rem[0:1]
             if family != SMFIA_UNKNOWN:
                 port = unpack_uint16(rem[1:3])
                 ip = rem[3:-1]
-        return self.connect(hostname , family , ip , port , md)
+        return self.connect(hostname, family, ip, port, md)
 
-    def _helo(self , cmd , data):
+    def _helo(self, cmd, data):
         """
         Parses the helo info from the MTA and calls helo() with 
         (<helo name>)
@@ -782,14 +781,14 @@ class MilterProtocol(object):
         data = data[0]
         heloname = ''
         if data:
-            checkData(data , SMFIC_HELO)
+            checkData(data, SMFIC_HELO)
             heloname = data[1:-1]
         return self.helo(heloname)
 
-    def _mailFrom(self , cmd , data):
+    def _mailFrom(self, cmd, data):
         """
         Parses the MAIL FROM info from the MTA and calls mailFrom()
-        with (<from addr> , <cmdDict>)
+        with (<from addr>, <cmdDict>)
         """
         md = {}
         if cmd is not None:
@@ -803,12 +802,12 @@ class MilterProtocol(object):
             mfrom = md[b'mail_addr']
         if b'i' in md:
             self._qid = md[b'i']
-        return self.mailFrom(mfrom , md)
+        return self.mailFrom(mfrom, md)
 
-    def _rcpt(self , cmd , data):
+    def _rcpt(self, cmd, data):
         """
         Parses the RCPT TO info from the MTA and calls rcpt()
-        with (<rcpt addr> , <cmdDict>)
+        with (<rcpt addr>, <cmdDict>)
         """
         md = {}
         if cmd is not None:
@@ -821,12 +820,12 @@ class MilterProtocol(object):
             rcpt = md[b'rcpt_addr']
         if b'i' in md:
             self._qid = md[b'i']
-        return self.rcpt(rcpt , md)
+        return self.rcpt(rcpt, md)
 
-    def _header(self , cmd , data):
+    def _header(self, cmd, data):
         """
         Parses the header from the MTA and calls header() with
-        (<header name> , <header value> , <cmdDict>)
+        (<header name>, <header value>, <cmdDict>)
         """
         md = {}
         if cmd is not None:
@@ -837,14 +836,14 @@ class MilterProtocol(object):
         if b'i' in md:
             self._qid = md[b'i']
         if data:
-            key , rem = readUntilNull(data[1:])
-            val , rem = readUntilNull(rem)
+            key, rem = readUntilNull(data[1:])
+            val, rem = readUntilNull(rem)
             if rem:
-                raise UnknownError('Extra data for header: %s=%s (%s)' % (key , 
-                    val , data))
-        return self.header(key , val , md)
+                raise UnknownError('Extra data for header: %s=%s (%s)' % (key, 
+                    val, data))
+        return self.header(key, val, md)
 
-    def _eoh(self , cmd , data):
+    def _eoh(self, cmd, data):
         """
         Parses the End Of Header from the MTA and calls eoh() with
         (<cmdDict>)
@@ -856,7 +855,7 @@ class MilterProtocol(object):
             self._qid = md[b'i']
         return self.eoh(md)
 
-    def _data(self , cmd , data):
+    def _data(self, cmd, data):
         """
         Parses the DATA call from the MTA and calls data() with (<cmdDict>)
         """
@@ -867,10 +866,10 @@ class MilterProtocol(object):
             self._qid = md[b'i']
         return self.data(md)
 
-    def _body(self , cmd , data):
+    def _body(self, cmd, data):
         """
         Parses the body chunk from the MTA and calls body() with
-        (<body chunk> , <cmdDict>) 
+        (<body chunk>, <cmdDict>) 
         """
         data = data[0]
         md = {}
@@ -881,9 +880,9 @@ class MilterProtocol(object):
             self._qid = md[b'i']
         if data:
             chunk = data[1:]
-        return self.body(chunk , md)
+        return self.body(chunk, md)
 
-    def _eob(self , cmd , data):
+    def _eob(self, cmd, data):
         """
         Parses the End Of Body from the MTA and calls eob() with
         (<cmdDict>)
@@ -896,7 +895,7 @@ class MilterProtocol(object):
         ret = self.eob(md)
         return ret
 
-    def _close(self , cmd=None , data=None):
+    def _close(self, cmd=None, data=None):
         """
         This is a wrapper for close() that checks to see if close()
         has already been called and calls it if it has not.  This
@@ -915,21 +914,21 @@ class MilterProtocol(object):
         self._qid = None
         self.abort()
 
-    def _unknown(self , cmd , data):
+    def _unknown(self, cmd, data):
         """
-        Unknown command sent.  Call unknown() with (<cmdDict> , <data>)
+        Unknown command sent.  Call unknown() with (<cmdDict>, <data>)
         """
         if cmd is not None:
             md = dictFromCmd(cmd[2:])
         md = dictFromCmd(cmd[2:])
-        return self.unknown(md , data)
+        return self.unknown(md, data)
     # }}}
 
     #
     # Message modification methods {{{
     # NOTE: These can ONLY be called from eob()
     #
-    def addRcpt(self , rcpt , esmtpAdd=b''):
+    def addRcpt(self, rcpt, esmtpAdd=b''):
         """
         This will tell the MTA to add a recipient to the email
         
@@ -949,7 +948,7 @@ class MilterProtocol(object):
             req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def delRcpt(self , rcpt):
+    def delRcpt(self, rcpt):
         """
         This will tell the MTA to delete a recipient from the email
 
@@ -964,7 +963,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def replBody(self , body):
+    def replBody(self, body):
         """
         This will replace the body of the email with a new body
         
@@ -977,7 +976,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def addHeader(self , key , val):
+    def addHeader(self, key, val):
         """
         This will add a header to the email in the form:
             key: val
@@ -991,7 +990,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def chgHeader(self , key , val=b'' , index=1):
+    def chgHeader(self, key, val=b'', index=1):
         """
         This will change a header in the email.  The "key" should be
         exactly what was received in header().  If "val" is empty (''),
@@ -1009,7 +1008,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def quarantine(self , msg=b''):
+    def quarantine(self, msg=b''):
         """
         This tells the MTA to quarantine the message (put it in the HOLD
         queue in Postfix).
@@ -1023,7 +1022,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def setReply(self , rcode , xcode , msg):
+    def setReply(self, rcode, xcode, msg):
         """
         Sets the reply that the MTA will use for this message.
         The "rcode" is the 3 digit code to use (ex. 554 or 250).
@@ -1034,7 +1033,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def chgFrom(self , frAddr , esmtpAdd=b''):
+    def chgFrom(self, frAddr, esmtpAdd=b''):
         """
         This tells the MTA to change the from address, with optional
         ESMTP extensions
@@ -1069,24 +1068,24 @@ class MilterProtocol(object):
     # Override these in a subclass
     ###################
     @noCallback
-    def connect(self , hostname , family , ip , port , cmdDict): 
+    def connect(self, hostname, family, ip, port, cmdDict): 
         """
         This gets the connection info:
 
         str:hostname    The reverse hostname of the connecting ip
-        str:family      The IP family (L=unix , 4=ipv4 , 6=ipv6 , U=unknown)
+        str:family      The IP family (L=unix, 4=ipv4, 6=ipv6, U=unknown)
         str:ip          The IP of the connecting client
         int:port        The port number of the connecting client
         dict:cmdDict    The raw dictionary of items sent by the MTA
 
         Override this in a subclass.
         """
-        self.log('Connect from %s:%d (%s) with family: %s' % (ip , port ,
-            hostname , family))
+        self.log('Connect from %s:%d (%s) with family: %s' % (ip, port,
+            hostname, family))
         return CONTINUE
 
     @noCallback
-    def helo(self , heloname):
+    def helo(self, heloname):
         """
         This gets the HELO string sent by the client
 
@@ -1098,7 +1097,7 @@ class MilterProtocol(object):
         return CONTINUE
 
     @noCallback
-    def mailFrom(self , frAddr , cmdDict):
+    def mailFrom(self, frAddr, cmdDict):
         """
         This gets the MAIL FROM envelope address
 
@@ -1111,7 +1110,7 @@ class MilterProtocol(object):
         return CONTINUE
 
     @noCallback
-    def rcpt(self , recip , cmdDict):
+    def rcpt(self, recip, cmdDict):
         """
         This gets the RCPT TO envelope address
 
@@ -1124,11 +1123,11 @@ class MilterProtocol(object):
         return CONTINUE
 
     @noCallback
-    def header(self , key , val , cmdDict):
+    def header(self, key, val, cmdDict):
         """
         This gets one header from the email at a time.  The "key" is the
         LHS of the header and the "val" is RHS.
-        ex.: key="Subject" , val="The subject of my email"
+        ex.: key="Subject", val="The subject of my email"
 
         str:key         The header name
         str:val         The header value
@@ -1136,11 +1135,11 @@ class MilterProtocol(object):
 
         Override this in a subclass.
         """
-        self.log('%s: %s' % (key , val))
+        self.log('%s: %s' % (key, val))
         return CONTINUE
 
     @noCallback
-    def eoh(self , cmdDict):
+    def eoh(self, cmdDict):
         """
         This tells you when all the headers have been received
 
@@ -1152,7 +1151,7 @@ class MilterProtocol(object):
         return CONTINUE
 
     @noCallback
-    def data(self , cmdDict):
+    def data(self, cmdDict):
         """
         This is called when the client sends DATA
 
@@ -1164,7 +1163,7 @@ class MilterProtocol(object):
         return CONTINUE
 
     @noCallback
-    def body(self , chunk , cmdDict):
+    def body(self, chunk, cmdDict):
         """
         This gets a chunk of the body of the email from the MTA.
         This will be called many times for a large email
@@ -1177,7 +1176,7 @@ class MilterProtocol(object):
         self.log('Body chunk: %d' % len(chunk))
         return CONTINUE
 
-    def eob(self , cmdDict):
+    def eob(self, cmdDict):
         """
         This signals that the MTA has sent the entire body of the email.
         This is the callback where you can use modification methods,
@@ -1206,7 +1205,7 @@ class MilterProtocol(object):
         pass
 
     @noCallback
-    def unknown(self , cmdDict , data):
+    def unknown(self, cmdDict, data):
         return CONTINUE
     # }}}
 # }}}
@@ -1214,7 +1213,7 @@ class MilterProtocol(object):
 # class AsyncFactory {{{
 class AsyncFactory(object):
     # __init__() {{{
-    def __init__(self , sockstr , protocol , opts=0 , listenq=50 , 
+    def __init__(self, sockstr, protocol, opts=0, listenq=50, 
             sockChmod=0o666):
         self.sock = None
         self.opts = opts
@@ -1235,24 +1234,24 @@ class AsyncFactory(object):
         while True:
             if self._close.isSet():
                 break
-            sock , addr = self.sock.accept()
+            sock, addr = self.sock.accept()
             p = self.protocol(self.opts)
             p.transport = sock
-            self.register(sock , p)
+            self.register(sock, p)
     # }}}
     
     # register() {{{
-    def register(self , sock , proto):
+    def register(self, sock, proto):
         fileno = sock.fileno()
         self.regLock.acquire()
         self.sockMap[fileno] = sock
         self.protoMap[fileno] = proto
-        self.poll.register(fileno , self.emask)
+        self.poll.register(fileno, self.emask)
         self.regLock.release()
     # }}}
 
     # unregister() {{{
-    def unregister(self , fileno):
+    def unregister(self, fileno):
         self.regLock.acquire()
         self.poll.unregister(fileno)
         del self.sockMap[fileno]
@@ -1267,15 +1266,15 @@ class AsyncFactory(object):
             ip = self.sockStr[5:self.sockStr.rfind(':')]
             port = self.sockStr[self.sockStr.rfind(':')+1:]
             (family, socktype, proto, canonname, sockaddr)=socket.getaddrinfo(ip, None)[0]
-            self.sock = socket.socket(family , socket.SOCK_STREAM)
+            self.sock = socket.socket(family, socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.sock.bind((ip , int(port)))
+            self.sock.bind((ip, int(port)))
         else:
             if os.path.exists(self.sockStr):
                 os.unlink(self.sockStr)
-            self.sock = socket.socket(socket.AF_UNIX , socket.SOCK_STREAM)
+            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             self.sock.bind(self.sockStr)
-            os.chmod(self.sockStr , self.sockChmod)
+            os.chmod(self.sockStr, self.sockChmod)
         self.sock.listen(self.listenq)
         t = threading.Thread(target=self.runAccepts)
         t.daemon = True
@@ -1289,7 +1288,7 @@ class AsyncFactory(object):
             except select.error:
                 # This is usually just do to a HUP, just start the loop again
                 continue
-            for fd , ev in l:
+            for fd, ev in l:
                 s = self.sockMap[fd]
                 p = self.protoMap[fd]
                 buf = ''
@@ -1306,11 +1305,11 @@ class AsyncFactory(object):
                     try:
                         p.dataReceived(buf)
                     except Exception as e:
-                        p.log('AN EXCEPTION OCCURED IN %s: %s' % (p.id , e))
+                        p.log('AN EXCEPTION OCCURED IN %s: %s' % (p.id, e))
                         if DEBUG:
                             traceback.print_exc()
                         print('AN EXCEPTION OCCURED IN ' \
-                            '%s: %s' % (p.id , e), file=sys.stderr)
+                            '%s: %s' % (p.id, e), file=sys.stderr)
                         p.connectionLost()
                         self.unregister(fd)
             # Check the deferreds
@@ -1331,11 +1330,11 @@ class AsyncFactory(object):
     # close() {{{
     def close(self):
         self._close.set()
-        for i , s in list(self.sockMap.items()):
+        for i, s in list(self.sockMap.items()):
             self.poll.unregister(i)
             s.close()
             del self.sockMap[i]
-        for i , p in list(self.protoMap.items()):
+        for i, p in list(self.protoMap.items()):
             p.connectionLost()
             del self.protoMap[i]
         self.sock.close()
@@ -1344,8 +1343,8 @@ class AsyncFactory(object):
 
 # class ThreadFactory {{{
 class ThreadFactory(object):
-    def __init__(self , sockstr , protocol , opts=0 , listenq=50 , 
-            sockChmod=0o666 , cSockTimeout=1200):
+    def __init__(self, sockstr, protocol, opts=0, listenq=50, 
+            sockChmod=0o666, cSockTimeout=1200):
         self.sock = None
         self.opts = opts
         self.protocol = protocol
@@ -1357,20 +1356,20 @@ class ThreadFactory(object):
 
     def _setupSock(self):
         if self.sockStr.lower().startswith('inet:'):
-            junk , ip , port = self.sockStr.split(':')
-            self.sock = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+            junk, ip, port = self.sockStr.split(':')
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.sock.bind((ip , int(port)))
+            self.sock.bind((ip, int(port)))
         else:
             if os.path.exists(self.sockStr):
                 os.unlink(self.sockStr)
-            self.sock = socket.socket(socket.AF_UNIX , socket.SOCK_STREAM)
+            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             self.sock.bind(self.sockStr)
-            os.chmod(self.sockStr , self.sockChmod)
+            os.chmod(self.sockStr, self.sockChmod)
         self.sock.settimeout(3)
         self.sock.listen(self.listenq)
 
-    def log(self , msg):
+    def log(self, msg):
         """
         Override in subclass to implement logging
         """
@@ -1382,14 +1381,14 @@ class ThreadFactory(object):
             if self._close.isSet():
                 break
             try:
-                sock , addr = self.sock.accept()
+                sock, addr = self.sock.accept()
             except socket.timeout:
-                debug('Accept socket timed out' , 4 , -1)
+                debug('Accept socket timed out', 4, -1)
                 continue
             except socket.error as e:
                 emsg = 'ERROR IN ACCEPT(): %s' % e
                 self.log(emsg)
-                debug(emsg , 1 , -1)
+                debug(emsg, 1, -1)
                 continue
             sock.settimeout(self.cSockTimeout)
             p = self.protocol(self.opts)
@@ -1399,9 +1398,9 @@ class ThreadFactory(object):
                 p.start()
             except Exception as e:
                 emsg = 'An error occured starting the thread for ' + \
-                    'connect from: %r: %s' % (addr , e)
+                    'connect from: %r: %s' % (addr, e)
                 self.log(emsg)
-                debug(emsg , 1 , -1)
+                debug(emsg, 1, -1)
                 p.transport = None
                 sock.close()
     
@@ -1413,8 +1412,8 @@ class ThreadFactory(object):
 
 # class ForkFactory {{{
 class ForkFactory(object):
-    def __init__(self , sockstr , protocol , opts=0 , listenq=50 , 
-            sockChmod=0o666 , cSockTimeout=300):
+    def __init__(self, sockstr, protocol, opts=0, listenq=50, 
+            sockChmod=0o666, cSockTimeout=300):
         self.sock = None
         self.opts = opts
         self.protocol = protocol
@@ -1436,20 +1435,20 @@ class ForkFactory(object):
 
     def _setupSock(self):
         if self.sockStr.lower().startswith('inet:'):
-            junk , ip , port = self.sockStr.split(':')
-            self.sock = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+            junk, ip, port = self.sockStr.split(':')
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.sock.bind((ip , int(port)))
+            self.sock.bind((ip, int(port)))
         else:
             if os.path.exists(self.sockStr):
                 os.unlink(self.sockStr)
-            self.sock = socket.socket(socket.AF_UNIX , socket.SOCK_STREAM)
+            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             self.sock.bind(self.sockStr)
-            os.chmod(self.sockStr , self.sockChmod)
+            os.chmod(self.sockStr, self.sockChmod)
         self.sock.settimeout(3)
         self.sock.listen(self.listenq)
 
-    def log(self , msg):
+    def log(self, msg):
         """
         Override in subclass to implement logging
         """
@@ -1461,14 +1460,14 @@ class ForkFactory(object):
             if self._close.isSet():
                 break
             try:
-                sock , addr = self.sock.accept()
+                sock, addr = self.sock.accept()
             except socket.timeout:
-                debug('Accept socket timed out' , 4 , -1)
+                debug('Accept socket timed out', 4, -1)
                 continue
             except socket.error as e:
                 emsg = 'ERROR IN ACCEPT(): %s' % e
                 self.log(emsg)
-                debug(emsg , 1 , -1)
+                debug(emsg, 1, -1)
                 continue
             sock.settimeout(self.cSockTimeout)
             p = self.protocol(self.opts)
@@ -1477,9 +1476,9 @@ class ForkFactory(object):
                 p.start()
             except Exception as e:
                 emsg = 'An error occured starting the thread for ' + \
-                    'connect from: %r: %s' % (addr , e)
+                    'connect from: %r: %s' % (addr, e)
                 self.log(emsg)
-                debug(emsg , 1 , -1)
+                debug(emsg, 1, -1)
                 p.transport = None
                 sock.close()
     
@@ -1492,11 +1491,11 @@ class ForkFactory(object):
 # def test() {{{
 def test():
     import signal
-    t = AsyncFactory('inet:127.0.0.1:5000' , MilterProtocol)
-    def sigHandler(num , frame):
+    t = AsyncFactory('inet:127.0.0.1:5000', MilterProtocol)
+    def sigHandler(num, frame):
         t.close()
         sys.exit(0)
-    signal.signal(signal.SIGINT , sigHandler)
+    signal.signal(signal.SIGINT, sigHandler)
     t.run()
 # }}}
 
