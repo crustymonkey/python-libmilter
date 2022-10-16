@@ -259,7 +259,7 @@ class DeferToThread(Deferred):
 
     def _wrapper(self, cb, args, kwargs):
         try:
-            self.result = cb(*args , **kwargs)
+            self.result = cb(*args, **kwargs)
         except Exception as e:
             self.error = e
         self.completed = True
@@ -462,7 +462,7 @@ class ThreadMixin(threading.Thread):
             try:
                 self.dataReceived(buf)
             except Exception as e:
-                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id , e))
+                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id, e))
                 if DEBUG:
                     traceback.print_exc()
                     debug('AN EXCEPTION OCCURED: %s' % e, 1, self.id)
@@ -504,7 +504,7 @@ class ForkMixin(object):
             try:
                 self.dataReceived(buf)
             except Exception as e:
-                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id , e))
+                self.log('AN EXCEPTION OCCURED IN %s: %s' % (self.id, e))
                 if DEBUG:
                     traceback.print_exc()
                     debug('AN EXCEPTION OCCURED: %s' % e, 1, self.id)
@@ -606,7 +606,7 @@ class MilterProtocol(object):
         if buf:
             curcmds = []
             try:
-                curcmds , remaining = parse_packet(buf)
+                curcmds, remaining = parse_packet(buf)
             except InvalidPacket as e:
                 debug('Found a partial header: %r; cmdlen: %d ; buf: %r' % 
                     (e.pp, len(e.cmds), buf), 2, self.id)
@@ -720,11 +720,11 @@ class MilterProtocol(object):
             debug('Sending: %r' % msg, 4, self.id)
             self.transport.sendall(msg)
         except AttributeError as e:
-            emsg = 'AttributeError sending %s: %s' % (msg , e)
+            emsg = 'AttributeError sending %s: %s' % (msg, e)
             self.log(emsg)
             debug(emsg)
         except socket.error as e:
-            emsg = 'Socket Error sending %s: %s' % (msg , e)
+            emsg = 'Socket Error sending %s: %s' % (msg, e)
             self.log(emsg)
             debug(emsg)
         self._sockLock.release()
@@ -802,7 +802,7 @@ class MilterProtocol(object):
             mfrom = md[b'mail_addr']
         if b'i' in md:
             self._qid = md[b'i']
-        return self.mailFrom(mfrom , md)
+        return self.mailFrom(mfrom, md)
 
     def _rcpt(self, cmd, data):
         """
@@ -820,7 +820,7 @@ class MilterProtocol(object):
             rcpt = md['rcpt_addr']
         if 'i' in md:
             self._qid = md['i']
-        return self.rcpt(rcpt , md)
+        return self.rcpt(rcpt, md)
 
     def _header(self, cmd, data):
         """
@@ -928,7 +928,7 @@ class MilterProtocol(object):
     # Message modification methods {{{
     # NOTE: These can ONLY be called from eob()
     #
-    def addRcpt(self , rcpt , esmtpAdd=b''):
+    def addRcpt(self, rcpt, esmtpAdd=b''):
         """
         This will tell the MTA to add a recipient to the email
         
@@ -1008,7 +1008,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def quarantine(self , msg=b''):
+    def quarantine(self, msg=b''):
         """
         This tells the MTA to quarantine the message (put it in the HOLD
         queue in Postfix).
@@ -1033,7 +1033,7 @@ class MilterProtocol(object):
         req = pack_uint32(len(req)) + req
         self.send(req)
 
-    def chgFrom(self , frAddr , esmtpAdd=b''):
+    def chgFrom(self, frAddr, esmtpAdd=b''):
         """
         This tells the MTA to change the from address, with optional
         ESMTP extensions
@@ -1213,7 +1213,7 @@ class MilterProtocol(object):
 # class AsyncFactory {{{
 class AsyncFactory(object):
     # __init__() {{{
-    def __init__(self , sockstr , protocol , opts=0 , listenq=50 , 
+    def __init__(self, sockstr, protocol, opts=0, listenq=50, 
             sockChmod=0o666):
         self.sock = None
         self.opts = opts
@@ -1305,11 +1305,11 @@ class AsyncFactory(object):
                     try:
                         p.dataReceived(buf)
                     except Exception as e:
-                        p.log('AN EXCEPTION OCCURED IN %s: %s' % (p.id , e))
+                        p.log('AN EXCEPTION OCCURED IN %s: %s' % (p.id, e))
                         if DEBUG:
                             traceback.print_exc()
                         print('AN EXCEPTION OCCURED IN ' \
-                            '%s: %s' % (p.id , e), file=sys.stderr)
+                            '%s: %s' % (p.id, e), file=sys.stderr)
                         p.send(TEMPFAIL)
                         p.connectionLost()
                         self.unregister(fd)
@@ -1331,11 +1331,11 @@ class AsyncFactory(object):
     # close() {{{
     def close(self):
         self._close.set()
-        for i , s in list(self.sockMap.items()):
+        for i, s in list(self.sockMap.items()):
             self.poll.unregister(i)
             s.close()
             del self.sockMap[i]
-        for i , p in list(self.protoMap.items()):
+        for i, p in list(self.protoMap.items()):
             p.connectionLost()
             del self.protoMap[i]
         self.sock.close()
@@ -1344,8 +1344,8 @@ class AsyncFactory(object):
 
 # class ThreadFactory {{{
 class ThreadFactory(object):
-    def __init__(self , sockstr , protocol , opts=0 , listenq=50 , 
-            sockChmod=0o666 , cSockTimeout=1200):
+    def __init__(self, sockstr, protocol, opts=0, listenq=50, 
+            sockChmod=0o666, cSockTimeout=1200):
         self.sock = None
         self.opts = opts
         self.protocol = protocol
@@ -1413,8 +1413,8 @@ class ThreadFactory(object):
 
 # class ForkFactory {{{
 class ForkFactory(object):
-    def __init__(self , sockstr , protocol , opts=0 , listenq=50 , 
-            sockChmod=0o666 , cSockTimeout=300):
+    def __init__(self, sockstr, protocol, opts=0, listenq=50, 
+            sockChmod=0o666, cSockTimeout=300):
         self.sock = None
         self.opts = opts
         self.protocol = protocol
