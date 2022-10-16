@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # This file is part of python-libmilter.
 # 
@@ -84,7 +84,7 @@ class TestMilter(lm.ForkMixin, lm.MilterProtocol):
 
     def eob(self, cmdDict):
         self.log("EOB")
-        #self.setReply("554" , "5.7.1" , "Rejected because I said so")
+        #self.setReply("554", "5.7.1", "Rejected because I said so")
         return lm.CONTINUE
 
     def close(self):
